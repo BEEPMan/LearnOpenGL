@@ -8,6 +8,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class Shader
 {
 public:
@@ -21,6 +25,8 @@ public:
 
 	void UseShader();
 
+	unsigned int GetID();
+
 	void SetBool(const std::string& name, bool value) const;
 	void SetInt(const std::string& name, int value) const;
 	void SetFloat(const std::string& name, float value) const;
@@ -29,5 +35,5 @@ public:
 
 	~Shader();
 private:
-	unsigned int _program;
+	unsigned int _ID;
 };

@@ -2,7 +2,7 @@
 
 Shader::Shader()
 {
-	_program = 0;
+	_ID = 0;
 }
 
 void Shader::CreateFromFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
@@ -10,17 +10,17 @@ void Shader::CreateFromFile(const std::string& vertexShaderPath, const std::stri
 	std::string vertexCode = ReadFile(vertexShaderPath);
 	std::string fragmentCode = ReadFile(fragmentShaderPath);
 
-	_program = glCreateProgram();
+	_ID = glCreateProgram();
 	AttachShader(vertexCode.c_str(), GL_VERTEX_SHADER);
 	AttachShader(fragmentCode.c_str(), GL_FRAGMENT_SHADER);
-	glLinkProgram(_program);
+	glLinkProgram(_ID);
 
 	int success;
 	char infoLog[512];
-	glGetProgramiv(_program, GL_LINK_STATUS, &success);
+	glGetProgramiv(_ID, GL_LINK_STATUS, &success);
 	if (!success)
 	{
-		glGetProgramInfoLog(_program, 512, NULL, infoLog);
+		glGetProgramInfoLog(_ID, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM_LINK_FAILED\n" << infoLog << std::endl;
 		return;
 	}
@@ -67,39 +67,44 @@ void Shader::AttachShader(const char* shaderCode, GLenum shaderType)
 		return;
 	}
 
-	glAttachShader(_program, shader);
+	glAttachShader(_ID, shader);
 	glDeleteShader(shader);
 }
 
 void Shader::UseShader()
 {
-	glUseProgram(_program);
+	glUseProgram(_ID);
+}
+
+unsigned int Shader::GetID()
+{
+	return _ID;
 }
 
 void Shader::SetBool(const std::string& name, bool value) const
 {
-	int uniformLocation = glGetUniformLocation(_program, name.c_str());
+	int uniformLocation = glGetUniformLocation(_ID, name.c_str());
 	glUniform1i(uniformLocation, (int)value);
 }
 
 void Shader::SetInt(const std::string& name, int value) const
 {
-	int uniformLocation = glGetUniformLocation(_program, name.c_str());
+	int uniformLocation = glGetUniformLocation(_ID, name.c_str());
 	glUniform1i(uniformLocation, value);
 }
 
 void Shader::SetFloat(const std::string& name, float value) const
 {
-	int uniformLocation = glGetUniformLocation(_program, name.c_str());
+	int uniformLocation = glGetUniformLocation(_ID, name.c_str());
 	glUniform1f(uniformLocation, value);
 }
 
 void Shader::ClearShader()
 {
-	if (_program != 0)
+	if (_ID != 0)
 	{
-		glDeleteProgram(_program);
-		_program = 0;
+		glDeleteProgram(_ID);
+		_ID = 0;
 	}
 }
 
