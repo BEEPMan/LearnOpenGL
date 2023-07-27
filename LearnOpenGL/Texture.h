@@ -15,10 +15,9 @@ class Texture
 public:
 	Texture();
 
-	void CreateTexture(const std::string& vertexShaderPath);
-	void CreateTextureA(const std::string& texturePath);
+	void CreateTexture(const std::string& texturePath);
 
-	void ActiveTexture(const unsigned int ID);
+	void ActiveTexture(const unsigned int ID = 0);
 
 	~Texture();
 private:
