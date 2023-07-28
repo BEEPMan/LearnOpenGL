@@ -26,9 +26,12 @@ public:
 	float Sensitivity;
 
 	glm::vec3 Position;
+	glm::vec3 Front;
+	glm::vec3 Right;
+	glm::vec3 Up;
 
 	Camera(const glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), const glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), const float yaw = C_YAW, const float pitch = C_PITCH)
-		: Position(pos), m_up(up), m_yaw(yaw), m_pitch(pitch), m_front(glm::vec3(0.0f, 0.0f, -1.0f)), Speed(C_SPEED), Sensitivity(C_SENSITIVITY), FOV(C_FOV)
+		: Position(pos), Up(up), m_yaw(yaw), m_pitch(pitch), Front(glm::vec3(0.0f, 0.0f, -1.0f)), Speed(C_SPEED), Sensitivity(C_SENSITIVITY), FOV(C_FOV)
 	{
 		UpdateCameraVectors();
 	}
@@ -42,11 +45,7 @@ public:
 	~Camera();
 private:
 	float m_yaw;
-	float m_pitch;
-
-	glm::vec3 m_front;
-	glm::vec3 m_right;
-	glm::vec3 m_up;
+	float m_pitch;	
 
 	void UpdateCameraVectors()
 	{
@@ -55,9 +54,9 @@ private:
 		front.y = sin(glm::radians(m_pitch));
 		front.z = cos(glm::radians(m_pitch)) * sin(glm::radians(m_yaw));
 
-		m_front = glm::normalize(front);
-		m_right = glm::normalize(glm::cross(m_front, glm::vec3(0.0f, 1.0f, 0.0f)));
-		m_up = glm::normalize(glm::cross(m_right, m_front));
+		Front = glm::normalize(front);
+		Right = glm::normalize(glm::cross(Front, glm::vec3(0.0f, 1.0f, 0.0f)));
+		Up = glm::normalize(glm::cross(Right, Front));
 	}
 };
 

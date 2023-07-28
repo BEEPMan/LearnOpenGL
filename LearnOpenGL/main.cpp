@@ -36,12 +36,20 @@ float lastX = 400.0f, lastY = 300.0f;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
+glm::vec3 pointLightPositions[] = {
+	glm::vec3(0.7f,  0.2f,  2.0f),
+	glm::vec3(2.3f, -3.3f, -4.0f),
+	glm::vec3(-4.0f,  2.0f, -12.0f),
+	glm::vec3(0.0f,  0.0f, -3.0f)
+};
+
 glm::vec3 ambient(0.2f, 0.2f, 0.2f);
 glm::vec3 diffuse(0.5f, 0.5f, 0.5f);
 glm::vec3 specular(1.0f, 1.0f, 1.0f);
 float shininess = 32.0f;
 
 bool isCursorEnable = false;
+bool isFlashOn = true;
 
 const std::string vertexShaderPath = "Shaders/shader.vert";
 const std::string fragmentShaderPath = "Shaders/shader.frag";
@@ -259,12 +267,17 @@ int main()
 		lightshader.SetMat4("projection", projection);
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		lightshader.SetMat4("model", model);
 
 		glBindVertexArray(lightVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (unsigned int i = 0; i < 4; i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, pointLightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lightshader.SetMat4("model", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		shader.UseShader();
 
@@ -273,16 +286,64 @@ int main()
 		shader.SetInt("material.emission", 2);
 		shader.SetFloat("material.shininess", shininess);
 
-		shader.SetVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-		shader.SetVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-		shader.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		// directional light
+		shader.SetVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		shader.SetVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		shader.SetVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+		// point light 1
+		shader.SetVec3("pointLights[0].position", pointLightPositions[0]);
+		shader.SetVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetFloat("pointLights[0].constant", 1.0f);
+		shader.SetFloat("pointLights[0].linear", 0.09f);
+		shader.SetFloat("pointLights[0].quadratic", 0.032f);
+		// point light 2
+		shader.SetVec3("pointLights[1].position", pointLightPositions[1]);
+		shader.SetVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetFloat("pointLights[1].constant", 1.0f);
+		shader.SetFloat("pointLights[1].linear", 0.09f);
+		shader.SetFloat("pointLights[1].quadratic", 0.032f);
+		// point light 3
+		shader.SetVec3("pointLights[2].position", pointLightPositions[2]);
+		shader.SetVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetFloat("pointLights[2].constant", 1.0f);
+		shader.SetFloat("pointLights[2].linear", 0.09f);
+		shader.SetFloat("pointLights[2].quadratic", 0.032f);
+		// point light 4
+		shader.SetVec3("pointLights[3].position", pointLightPositions[3]);
+		shader.SetVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetFloat("pointLights[3].constant", 1.0f);
+		shader.SetFloat("pointLights[3].linear", 0.09f);
+		shader.SetFloat("pointLights[3].quadratic", 0.032f);
+		// spotLight
+		shader.SetVec3("spotLight.position", mainCamera.Position);
+		shader.SetVec3("spotLight.direction", mainCamera.Front);
+		if (isFlashOn)
+		{
+			shader.SetVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+			shader.SetVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+			shader.SetVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		}
+		else
+		{
+			shader.SetVec3("spotLight.ambient", glm::vec3(0.0f));
+			shader.SetVec3("spotLight.diffuse", glm::vec3(0.0f));
+			shader.SetVec3("spotLight.specular", glm::vec3(0.0f));
+		}
+		shader.SetFloat("spotLight.constant", 1.0f);
+		shader.SetFloat("spotLight.linear", 0.09f);
+		shader.SetFloat("spotLight.quadratic", 0.032f);
+		shader.SetFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		shader.SetFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
-		shader.SetFloat("light.constant", 1.0f);
-		shader.SetFloat("light.linear", 0.09f);
-		shader.SetFloat("light.quadratic", 0.032f);
-
-		shader.SetVec3("light.position", lightPos);
-		//shader.SetVec3("light.direction", -0.2f, -1.0f, -0.3f);
 		shader.SetVec3("viewPos", mainCamera.Position);
 		shader.SetFloat("time", glfwGetTime());
 
@@ -351,6 +412,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 {
 	if (key == GLFW_KEY_T && action == GLFW_PRESS)
 		ToggleMovement(window);
+	if (key == GLFW_KEY_F && action == GLFW_PRESS)
+		isFlashOn = !isFlashOn;
 }
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos)
