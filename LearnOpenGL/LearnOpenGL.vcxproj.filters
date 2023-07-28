@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\ImGui">
+      <UniqueIdentifier>{b9cfa5b6-48ab-439f-b6da-12b1aeef86e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -30,6 +33,27 @@
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="ImGUI\imgui.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_demo.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_draw.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_glfw.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_impl_opengl3.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_tables.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\imgui_widgets.cpp">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Texture.h">
@@ -43,6 +67,33 @@
     </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imconfig.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_glfw.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_opengl3.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_internal.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_rectpack.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_textedit.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imstb_truetype.h">
+      <Filter>소스 파일\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\imgui_impl_opengl3_loader.h">
+      <Filter>소스 파일\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

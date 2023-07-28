@@ -9,14 +9,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "ImGUI/imgui.h"
+#include "ImGUI/imgui_impl_glfw.h"
+#include "ImGUI/imgui_impl_opengl3.h"
+
 #include "Shader.h"
 #include "Texture.h"
 #include "Camera.h"
 
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
 void ProcessInput(GLFWwindow* window);
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void MouseCallback(GLFWwindow* window, double xPos, double yPos);
 void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+void ToggleMovement(GLFWwindow* window);
 unsigned int LoadTexture(const std::string& texturePath);
 
 const unsigned int SCREEN_WIDTH = 800;
@@ -29,6 +35,13 @@ bool isFirstMouse = true;
 float lastX = 400.0f, lastY = 300.0f;
 
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+glm::vec3 ambient(0.2f, 0.2f, 0.2f);
+glm::vec3 diffuse(0.5f, 0.5f, 0.5f);
+glm::vec3 specular(1.0f, 1.0f, 1.0f);
+float shininess = 32.0f;
+
+bool isCursorEnable = false;
 
 const std::string vertexShaderPath = "Shaders/shader.vert";
 const std::string fragmentShaderPath = "Shaders/shader.frag";
@@ -57,6 +70,7 @@ int main()
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetCursorPosCallback(window, MouseCallback);
 	glfwSetScrollCallback(window, ScrollCallback);
 
@@ -67,6 +81,29 @@ int main()
 	}
 
 #pragma endregion
+
+#pragma region GUI
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags != ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags != ImGuiConfigFlags_NavEnableGamepad;
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
+	bool show_demo_window = false;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+#pragma endregion
+
+	Shader shader, lightshader;
+	shader.CreateFromFile(vertexShaderPath, fragmentShaderPath);
+	lightshader.CreateFromFile(vertexLightShaderPath, fragmentLightShaderPath);
 
 	stbi_set_flip_vertically_on_load(true);
 	Texture diffuseMap, specularMap, emissionMap;
@@ -164,15 +201,46 @@ int main()
 
 #pragma endregion
 
-	Shader shader, lightshader;
-	shader.CreateFromFile(vertexShaderPath, fragmentShaderPath);
-	lightshader.CreateFromFile(vertexLightShaderPath, fragmentLightShaderPath);
-
 	// Rendering Loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Input
 		ProcessInput(window);
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		if (show_demo_window)
+			ImGui::ShowDemoWindow(&show_demo_window);
+
+		{
+			static float f = 0.0f;
+
+			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("shininess", &shininess, 0.0f, 128.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("ambient", (float*)&clear_color); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Toggle Movement"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				ToggleMovement(window);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+			ImGui::End();
+		}
+
+		if (show_another_window)
+		{
+			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+				show_another_window = false;
+			ImGui::End();
+		}
 
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
@@ -203,13 +271,18 @@ int main()
 		shader.SetInt("material.diffuse", 0);
 		shader.SetInt("material.specular", 1);
 		shader.SetInt("material.emission", 2);
-		shader.SetFloat("material.shininess", 32.0f);
+		shader.SetFloat("material.shininess", shininess);
 
 		shader.SetVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		shader.SetVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
 		shader.SetVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
-		shader.SetVec3("light.direction", -0.2f, -1.0f, -0.3f);
+		shader.SetFloat("light.constant", 1.0f);
+		shader.SetFloat("light.linear", 0.09f);
+		shader.SetFloat("light.quadratic", 0.032f);
+
+		shader.SetVec3("light.position", lightPos);
+		//shader.SetVec3("light.direction", -0.2f, -1.0f, -0.3f);
 		shader.SetVec3("viewPos", mainCamera.Position);
 		shader.SetFloat("time", glfwGetTime());
 
@@ -232,6 +305,9 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		// Poll Events & Swap Buffer
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -239,10 +315,15 @@ int main()
 
 	std::cout << "Welcome Back OpenGL!!" << std::endl;
 
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	shader.ClearShader();
 
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
 }
@@ -266,6 +347,12 @@ void ProcessInput(GLFWwindow* window)
 		mainCamera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_T && action == GLFW_PRESS)
+		ToggleMovement(window);
+}
+
 void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
 	if (isFirstMouse)
@@ -280,12 +367,23 @@ void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 	lastX = xPos;
 	lastY = yPos;
 
+	if (isCursorEnable) return;
 	mainCamera.ProcessMouseMovement(xOffset, yOffset);
 }
 
 void ScrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
 	mainCamera.ProcessMouseScroll(yOffset);
+}
+
+void ToggleMovement(GLFWwindow* window)
+{
+	if(isCursorEnable)
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	else
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
+	isCursorEnable = !isCursorEnable;
 }
 
 unsigned int LoadTexture(const std::string& texturePath)
